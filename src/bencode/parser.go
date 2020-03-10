@@ -10,16 +10,56 @@ import (
 const separator byte = ':'
 const endSeparator byte = 'e'
 
-func decodeInteger(reader *bufio.Reader) (int64, error) {
-	iByte, err := reader.ReadByte()
+//TODO Change return type
+func Parse(reader *bufio.Reader) ([]interface{}, error) {
+	var result []interface{}
+	var err error
+
+	for _, err = reader.Peek(1); err == nil; _, err = reader.Peek(1) {
+		if err := parse(reader, &result); err != nil {
+			return nil, err
+		}
+
+		if reader.Buffered() == 0 {
+			return result, err
+		}
+	}
+
+	return nil, err
+}
+
+func parse(reader *bufio.Reader, result *[]interface{}) error {
+	c, err := reader.ReadByte()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	if iByte != 'i' {
-		return 0, fmt.Errorf("expected i as first rune when parsing integer, got %c", iByte)
-	}
+	switch {
+	case c == 'i':
+		i, err := decodeInteger(reader)
+		if err != nil {
+			return err
+		}
+		
+		*result = append(*result, i)
+	case c >= '0' && c <= '9':
+		if err := reader.UnreadByte(); err != nil {
+			return err
+		}
 
+		s, err := decodeString(reader)
+		if err != nil {
+			return err
+		}
+		*result = append(*result, s)
+	default:
+		return fmt.Errorf("unrecognized character : %c", c)
+	}
+	return nil
+}
+
+
+func decodeInteger(reader *bufio.Reader) (int64, error) {
 	slice, err := reader.ReadSlice(endSeparator)
 	if err != nil {
 		return 0, err

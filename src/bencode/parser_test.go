@@ -2,6 +2,7 @@ package bencode
 
 import (
 	"bufio"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -74,6 +75,40 @@ func Test_decodeInteger(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("decodeInteger() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParse(t *testing.T) {
+	type args struct {
+		input string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []interface{}
+		wantErr bool
+	}{
+		{"empty", args{""}, nil, true},
+		{"non valid char", args{"a"}, nil, true},
+		{"non valid end char", args{"i0"}, nil, true},
+		{"non valid start char", args{"0e"}, nil, true},
+
+		{"0", args{"i0e"}, []interface{}{int64(0)}, false},
+		{"int with string", args{"i0e4:spam"}, []interface{}{int64(0), "spam"}, false},
+		{"int with strings", args{"i0e4:spam7:abcdefg"}, []interface{}{int64(0), "spam", "abcdefg"}, false},
+		{"ints with string", args{"i0e4:spami-1e"}, []interface{}{int64(0), "spam", int64(-1)}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Parse(bufio.NewReader(strings.NewReader(tt.args.input)))
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Parse() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
