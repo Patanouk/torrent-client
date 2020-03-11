@@ -58,13 +58,13 @@ func Test_decodeInteger(t *testing.T) {
 		{"empty", args{input: ""}, 0, true},
 		{"integer only", args{input: "10"}, 0, true},
 		{"no end char", args{input: "i10"}, 0, true},
-		{"no start char", args{input: "10e"}, 0, true},
-		{"invalid integer", args{input: "10e"}, 0, true},
+		{"invalid integer", args{input: "1ae"}, 0, true},
 
-		{"0", args{input: "i0e"}, 0, false},
-		{"10", args{input: "i10e"}, 10, false},
-		{"99", args{input: "i99e"}, 99, false},
-		{"-1", args{input: "i-1e"}, -1, false},
+		{"no start char", args{input: "10e"}, 10, false},
+		{"0", args{input: "0e"}, 0, false},
+		{"10", args{input: "10e"}, 10, false},
+		{"99", args{input: "99e"}, 99, false},
+		{"-1", args{input: "-1e"}, -1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
