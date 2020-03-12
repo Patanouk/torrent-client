@@ -80,6 +80,7 @@ func Test_decodeInteger(t *testing.T) {
 	}
 }
 
+//TODO Make tests less ugly. Just change the return type of the parsing function somehow
 func TestParse(t *testing.T) {
 	type args struct {
 		input string
@@ -99,6 +100,12 @@ func TestParse(t *testing.T) {
 		{"int with string", args{"i0e4:spam"}, []interface{}{int64(0), "spam"}, false},
 		{"int with strings", args{"i0e4:spam7:abcdefg"}, []interface{}{int64(0), "spam", "abcdefg"}, false},
 		{"ints with string", args{"i0e4:spami-1e"}, []interface{}{int64(0), "spam", int64(-1)}, false},
+
+		{"list with one string", args{"l4:spame"}, []interface{}{[]interface{}{"spam"}}, false},
+		{"list with two strings", args{"l4:spam4:eggse"}, []interface{}{[]interface{}{"spam", "eggs"}}, false},
+		{"list with string and int", args{"l4:spami10ee"}, []interface{}{[]interface{}{"spam", int64(10)}}, false},
+		{"nested lists", args{"ll4:spami10eee"}, []interface{}{[]interface{}{[]interface{}{"spam", int64(10)}}}, false},
+		{"nested lists with separate string", args{"ll4:spamei10ee"}, []interface{}{[]interface{}{[]interface{}{"spam"}, int64(10)}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

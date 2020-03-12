@@ -52,6 +52,26 @@ func parse(reader *bufio.Reader, result *[]interface{}) error {
 			return err
 		}
 		*result = append(*result, s)
+	case c == 'l':
+		var list []interface{}
+		for {
+			if c, err = reader.ReadByte(); err != nil {
+				return err
+			}
+
+			if c == 'e' {
+				break
+			}
+
+			if err := reader.UnreadByte(); err != nil {
+				return err
+			}
+
+			if err := parse(reader, &list); err != nil {
+				return err
+			}
+		}
+		*result = append(*result, list)
 	default:
 		return fmt.Errorf("unrecognized character : %c", c)
 	}
